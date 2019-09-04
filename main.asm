@@ -139,6 +139,7 @@ include "src/Timeouts.asm"
 include "src/Resultsscreen.asm"
 include "src/Fireball.asm"
 // partial 19XX merge
+include "src/Character.asm"
 include "src/Color.asm"
 include "src/Crash.asm"
 include "src/FD.asm"
