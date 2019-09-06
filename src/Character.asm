@@ -27,7 +27,7 @@ scope Character {
         constant JIGGLYPUFF(0x0A)
         constant NESS(0x0B)
         constant BOSS(0x0C)
-        constant METAL(0x0D)
+        constant METAL_MARIO(0x0D)
         constant NMARIO(0x0E)
         constant NFOX(0x0F)
         constant NDONKEY(0x10)
@@ -97,10 +97,10 @@ scope Character {
     constant START_X(10)
     constant START_Y(20)
     constant START_VISUAL(15)
-    constant NUM_ROWS(3)
-    constant NUM_COLUMNS(9)
+    constant NUM_ROWS(2)
+    constant NUM_COLUMNS(6)
     constant NUM_TILES(NUM_ROWS * NUM_COLUMNS)
-    constant ICON_SIZE(30)
+    constant ICON_SIZE(50)
 
     scope css_get_character_id_: {
         OS.patch_start(0x000135AEC, 0x8013786C)
@@ -157,7 +157,22 @@ scope Character {
         addiu   sp, sp, 0x0028      // deallocate stack space (original function)
 
         id_table:
-        db id.NMARIO
+        // default
+        db id.METAL_MARIO
+        db id.MARIO
+        db id.DONKEY_KONG
+        db id.LINK
+        db id.SAMUS
+        db id.CAPTAIN_FALCON
+        db id.NESS
+        db id.YOSHI
+        db id.KIRBY
+        db id.FOX
+        db id.PIKACHU
+        db id.JIGGLYPUFF
+
+        // actual custom
+        db id.METAL_MARIO
         db id.FOX
         db id.DONKEY_KONG
         db id.SAMUS
@@ -225,7 +240,7 @@ scope Character {
 
         // draw each character portrait
         // for each row
-            // for each column
+        // for each column
 
         lli     t0, NUM_ROWS                // init rows
         _outer_loop:
@@ -280,6 +295,8 @@ scope Character {
 
     }
 
+
+    // lol what the fuck this is this find_file_load_ function lmao
     scope find_file_load_: {
         dw 0x3C1A8003                       // original line 1
         dw 0x275A0C80                       // original line 2
@@ -320,6 +337,15 @@ scope Character {
     // @ Description
     // this function moves chip always to a set position
     // 801388A4
+
+
+    // this line controls how many chars are loaded on the VS. CSS
+    OS.patch_start(0x0013944C, 0x8013B1CC)
+    slti    at, s0, id.NMARIO + 1
+    OS.patch_end()
+
+    // this is the call to play_fgm_ for announcing chars
+    // 8013689C
 
 }
 
