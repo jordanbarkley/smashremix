@@ -347,6 +347,44 @@ scope Character {
     // this is the call to play_fgm_ for announcing chars
     // 8013689C
 
+    // this loads the zoom table for each character so they all appear the same
+    // size. this table has been moved and extended [Fray]
+    OS.patch_start(0x00132E58, 0x80134BD8)
+    li      t2, zoom_table                  // original line 1/3
+    cvt.s.w f10, f8                         // original line 2
+    OS.patch_end()
+
+    zoom_table:
+    float32 1.25                            // Mario
+    float32 1.15                            // Fox
+    float32 1.00                            // Donkey Kong
+    float32 1.03                            // Samus
+    float32 1.21                            // Luigi
+    float32 1.33                            // Link
+    float32 1.05                            // Yoshi
+    float32 1.07                            // Captain Falcon
+    float32 1.22                            // Kirby
+    float32 1.20                            // Pikachu
+    float32 1.25                            // Jigglypuff
+    float32 1.30                            // Ness
+    float32 1.00                            // Master Hand
+    float32 1.25                            // Metal Mario
+    float32 1.25                            // Polygon Mario
+    float32 1.15                            // Polygon Fox
+    float32 1.00                            // Polygon Donkey Kong
+    float32 1.03                            // Polygon Samus
+    float32 1.21                            // Polygon Luigi
+    float32 1.33                            // Polygon Link
+    float32 1.05                            // Polygon Yoshi
+    float32 1.07                            // Polygon Captain Falcon
+    float32 1.22                            // Polygon Kirby
+    float32 1.20                            // Polygon Pikachu
+    float32 1.25                            // Polygon Jigglypuff
+    float32 1.30                            // Polygon Ness
+    float32 0.00                            // Unknown (Placeholder)
+    float32 0.90                            // Giant Donkey Kong
+    float32 0.00                            // None (Placeholder)
+
 }
 
 } // __CHARACTER__
