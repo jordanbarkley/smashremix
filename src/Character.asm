@@ -335,8 +335,6 @@ scope Character {
     }
 
     // TODO
-    // fix chip placement when chip placed
-        // likely needs a complete rewrite
     // improve chip movement when picked up
         // likely needs a complete rewrite
     // find the dlist for the character tiles
@@ -349,8 +347,34 @@ scope Character {
         // or dynamically load characters(?)
 
     // @ Description
-    // this function moves chip always to a set position
+    // this function moves chip always to a set position when chip is down
     // 801388A4
+    // values of importance
+    // t7 - "player data structure" for p1 as defined by tehzz
+    // v0 - "player data structure" for px (calculated value)
+    // t8 - 0x0004(v0), cursor info stuct
+    // f6 - 0x0090(v0), increment x value?
+    // v1 - 0x0074(t8), some pointer in cursor info struct (position pointer?)
+    // f4 - 0x0058(v1), ?
+    // f8 - f4 + f6, aka ? + ?
+    // store f8 @ 0x0058(v1) aka f4 = f4 + f6
+
+    // more on the increment x value
+    // written to @ 
+        // 80139560 - appears to get value from some table EXTEND
+        // 801396F4 - appears to just write 0 to increment x
+
+    // lol we can just ignore all of this by getting rid of the function
+    // that slightly move the chip on placement with little consequence
+    // @ 80139460
+    OS.patch_start(0x001376E0, 0x80139460)
+    jr      ra
+    nop
+    OS.patch_end()
+
+
+    
+
 
     // lines that read from p2 selected character
     // something to do with animations
