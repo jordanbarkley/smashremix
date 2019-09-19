@@ -334,9 +334,33 @@ scope Character {
         nop
     }
 
+    // TODO
+    // fix chip placement when chip placed
+        // likely needs a complete rewrite
+    // improve chip movement when picked up
+        // likely needs a complete rewrite
+    // find the dlist for the character tiles
+    // add announcer sound fx for extra chars
+    // add background/series logo for extra chars
+    // add name textures for extra chars
+    // add white circle size for extra chars
+    // update character zoom for extra chars
+    // create memory module for loading extra character files
+        // or dynamically load characters(?)
+
     // @ Description
     // this function moves chip always to a set position
     // 801388A4
+
+    // lines that read from p2 selected character
+    // something to do with animations
+//  80138B38                // something something animation (unsure)
+
+    // some white circle shit
+//  80139BFC                // something something check for 0x1C/nochar
+//  80139C28                // size of circle under char aka not even important
+//  80139C40                // size of circle again (?)
+//  80139C58                // size of circle AGAIN (?)
 
 
     // this line controls how many chars are loaded on the VS. CSS
