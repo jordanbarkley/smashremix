@@ -170,56 +170,6 @@ scope Character {
         db id.FOX
         db id.PIKACHU
         db id.JIGGLYPUFF
-
-        // actual custom
-        db id.METAL_MARIO
-        db id.FOX
-        db id.DONKEY_KONG
-        db id.SAMUS
-        db id.LUIGI
-        db id.LINK
-        db id.YOSHI
-        db id.CAPTAIN_FALCON
-        db id.KIRBY
-        db id.PIKACHU
-        db id.JIGGLYPUFF
-        db id.NESS
-        db id.MARIO
-        db id.FOX
-        db id.DONKEY_KONG
-        db id.SAMUS
-        db id.LUIGI
-        db id.LINK
-        db id.YOSHI
-        db id.CAPTAIN_FALCON
-        db id.KIRBY
-        db id.PIKACHU
-        db id.JIGGLYPUFF
-        db id.NESS
-        db id.MARIO
-        db id.FOX
-        db id.DONKEY_KONG
-        db id.SAMUS
-        db id.LUIGI
-        db id.LINK
-        db id.YOSHI
-        db id.CAPTAIN_FALCON
-        db id.KIRBY
-        db id.PIKACHU
-        db id.JIGGLYPUFF
-        db id.NESS
-        db id.MARIO
-        db id.FOX
-        db id.DONKEY_KONG
-        db id.SAMUS
-        db id.LUIGI
-        db id.LINK
-        db id.YOSHI
-        db id.CAPTAIN_FALCON
-        db id.KIRBY
-        db id.PIKACHU
-        db id.JIGGLYPUFF
-        db id.NESS
         OS.align(4)
 
     }
@@ -295,56 +245,132 @@ scope Character {
 
     }
 
+    // TODO
+    // 1. create memory module for loading extra character files
+        // or dynamically load characters(?)
+    
+    // 2. animations for additonal characters 
+    
+    // 3. find the dlist for the character tiles
+        // E41180E0 - draw tex rect instruction for luigi and some
 
-    // lol what the fuck this is this find_file_load_ function lmao
-    scope find_file_load_: {
-        dw 0x3C1A8003                       // original line 1
-        dw 0x275A0C80                       // original line 2
+    // improve chip movement when picked up (optional)
+    // update character zoom for extra chars (optional)
 
-        addiu   sp, sp,-0x0020
-        sw      t0, 0x0004(sp)
-        sw      a0, 0x0008(sp)
-        sw      a1, 0x000C(sp)
-        sw      a2, 0x0010(sp)
-        sw      a3, 0x0014(sp)
-
-        lli     t0, 0x00CB                  // mario attribute data file id
-        beq     a0, t0, _pause
-        nop 
-        beq     a1, t0, _pause
-        nop 
-        beq     a2, t0, _pause
-        nop 
-        beq     a3, t0, _pause
-        nop
-
-        _pause:
-        nop
-        nop
-        nop
-
-        _end:
-        lw      t0, 0x0004(sp)
-        lw      a0, 0x0008(sp)
-        lw      a1, 0x000C(sp)
-        lw      a2, 0x0010(sp)
-        lw      a3, 0x0014(sp)
-        addiu   sp, sp, 0x0020
-        j       0x80000188          // return
+    // @ Description
+    // allows for custom entries of series logo based on file offset (+0x10 for DF000000 00000000)
+    // (requires modification of file 0x11)
+    scope css_get_name_texture_: {
+        OS.patch_start(0x00130E18, 0x80132B98)
+//      lw      t8, 0x0024(t8)                  // original line
+        j       css_get_name_texture_
+        lw      t5, 0xC4A0(t5)                  // original line
+        _css_get_name_texture_return:
+        OS.patch_end()
+    
+        li      t8, css_name_texture_table      // t8 = texture offset table 
+        addu    t8, t8, a2                      // t8 = address of texture offset
+        lw      t8, 0x0000(t8)                  // t8 = texture offset
+        j       _css_get_name_texture_return    // return
         nop
     }
 
-    // TODO
-    // improve chip movement when picked up
-        // likely needs a complete rewrite
-    // find the dlist for the character tiles
-    // add announcer sound fx for extra chars
-    // add background/series logo for extra chars
-    // add name textures for extra chars
-    // add white circle size for extra chars
-    // update character zoom for extra chars
-    // create memory module for loading extra character files
-        // or dynamically load characters(?)
+    // logo offsets in file 0x14
+    scope name_texture {
+        constant MARIO(0x00001838)
+        constant FOX(0x000025B8)
+        constant DONKEY_KONG(0x00001FF8)
+        constant SAMUS(0x00002358)
+        constant LUIGI(0x00001B18)
+        constant LINK(0x00002BA0)
+        constant YOSHI(0x00002ED8)
+        constant CAPTAIN_FALCON(0x00003998)
+        constant KIRBY(0x000028E8)
+        constant PIKACHU(0x000032F8)
+        constant JIGGLYPUFF(0x00003DB8)
+        constant NESS(0x000035B0)
+    }
+
+    css_name_texture_table:
+    dw name_texture.MARIO                   // Mario
+    dw name_texture.FOX                     // Fox
+    dw name_texture.DONKEY_KONG             // Donkey Kong
+    dw name_texture.SAMUS                   // Samus
+    dw name_texture.LUIGI                   // Luigi
+    dw name_texture.LINK                    // Link
+    dw name_texture.YOSHI                   // Yoshi
+    dw name_texture.CAPTAIN_FALCON          // Captain Falcon
+    dw name_texture.KIRBY                   // Kirby
+    dw name_texture.PIKACHU                 // Pikachu
+    dw name_texture.JIGGLYPUFF              // Jigglypuff
+    dw name_texture.NESS                    // Ness
+
+
+    // @ Description
+    // allows for custom entries of series logo based on file offset (+0x10 for DF000000 00000000)
+    // (requires modification of file 0x14)
+    scope css_get_series_logo_offset_: {
+        OS.patch_start(0x00130D68, 0x80132AE8)
+//      addu    t5, sp, a2                  // original line (sp holds table, a2 holds char id * 4)
+//      lw      t5, 0x0054(t5)              // original line (t5 = file offset of data)
+        j       css_get_series_logo_offset_ 
+        nop 
+        _css_get_series_logo_offset_return:
+        OS.patch_end()
+    
+        li      t5, css_series_logo_offset_table
+        addu    t5, t5, a2
+        lw      t5, 0x0000(t5)
+        j       _css_get_series_logo_offset_return
+        nop
+    }
+
+    // @ Description
+    // logo offsets in file 0x14
+    scope series_logo {
+        constant MARIO_BROS(0x00000618)
+        constant STARFOX(0x00001938)
+        constant DONKEY_KONG(0x00000C78)
+        constant METROID(0x000012D8)
+        constant ZELDA(0x000025F8)
+        constant YOSHI(0x00002C58)
+        constant FZERO(0x000032B8)
+        constant KIRBY(0x00001F98)
+        constant POKEMON(0x00003918)
+        constant EARTHBOUND(0x00003F78)
+        constant SMASH(0x00000000)
+    }
+
+    css_series_logo_offset_table:
+    dw series_logo.MARIO_BROS               // Mario
+    dw series_logo.STARFOX                  // Fox
+    dw series_logo.DONKEY_KONG              // Donkey Kong
+    dw series_logo.METROID                  // Samus
+    dw series_logo.MARIO_BROS               // Luigi
+    dw series_logo.ZELDA                    // Link
+    dw series_logo.YOSHI                    // Yoshi
+    dw series_logo.FZERO                    // Captain Falcon
+    dw series_logo.KIRBY                    // Kirby
+    dw series_logo.POKEMON                  // Pikachu
+    dw series_logo.POKEMON                  // Jigglypuff
+    dw series_logo.EARTHBOUND               // Ness
+    dw series_logo.SMASH                    // Master Hand
+    dw series_logo.MARIO_BROS               // Metal Mario
+    dw series_logo.SMASH                    // Polygon Mario
+    dw series_logo.SMASH                    // Polygon Fox
+    dw series_logo.SMASH                    // Polygon Donkey Kong
+    dw series_logo.SMASH                    // Polygon Samus
+    dw series_logo.SMASH                    // Polygon Luigi
+    dw series_logo.SMASH                    // Polygon Link
+    dw series_logo.SMASH                    // Polygon Yoshi
+    dw series_logo.SMASH                    // Polygon Captain Falcon
+    dw series_logo.SMASH                    // Polygon Kirby
+    dw series_logo.SMASH                    // Polygon Pikachu
+    dw series_logo.SMASH                    // Polygon Jigglypuff
+    dw series_logo.SMASH                    // Polygon Ness
+    dw 0x00000000                           // Unknown (Placeholder)
+    dw series_logo.DONKEY_KONG              // Giant Donkey Kong
+    dw 0x00000000                           // None (Placeholder)
 
     // @ Description
     // this function moves chip always to a set position when chip is down
@@ -373,19 +399,56 @@ scope Character {
     OS.patch_end()
 
 
-    
-
-
-    // lines that read from p2 selected character
-    // something to do with animations
-//  80138B38                // something something animation (unsure)
-
     // some white circle shit
 //  80139BFC                // something something check for 0x1C/nochar
 //  80139C28                // size of circle under char aka not even important
 //  80139C40                // size of circle again (?)
 //  80139C58                // size of circle AGAIN (?)
 
+    // controls whether or not white circle written 
+    scope css_get_zoom_: {
+        OS.patch_start(0x00137E18, 0x80139B98)
+//      addiu   a1, sp, 0x0004                  // original line
+        j       css_get_zoom_                   // set table to custom table
+        addiu   t6, t6, 0xB90C                  // original line
+        _css_get_zoom_return:
+        OS.patch_end()
+
+        li      a1, css_white_circle_size_table // set a1
+        j       _css_get_zoom_return            // return
+        nop
+    }
+
+    css_white_circle_size_table:
+    float32 1.50                            // Mario
+    float32 1.50                            // Fox
+    float32 2.00                            // Donkey Kong
+    float32 1.50                            // Samus
+    float32 1.50                            // Luigi
+    float32 1.50                            // Link
+    float32 1.50                            // Yoshi
+    float32 1.50                            // Captain Falcon
+    float32 1.50                            // Kirby
+    float32 1.50                            // Pikachu
+    float32 1.50                            // Jigglypuff
+    float32 1.50                            // Ness
+    float32 1.50                            // Master Hand
+    float32 1.50                            // Metal Mario
+    float32 1.50                            // Polygon Mario
+    float32 1.50                            // Polygon Fox
+    float32 1.50                            // Polygon Donkey Kong
+    float32 1.50                            // Polygon Samus
+    float32 1.50                            // Polygon Luigi
+    float32 1.50                            // Polygon Link
+    float32 1.50                            // Polygon Yoshi
+    float32 1.50                            // Polygon Captain Falcon
+    float32 1.50                            // Polygon Kirby
+    float32 1.50                            // Polygon Pikachu
+    float32 1.50                            // Polygon Jigglypuff
+    float32 1.50                            // Polygon Ness
+    float32 0.00                            // Unknown (Placeholder)
+    float32 2.00                            // Giant Donkey Kong
+    float32 0.00                            // None (Placeholder)
 
     // this line controls how many chars are loaded on the VS. CSS
     OS.patch_start(0x0013944C, 0x8013B1CC)
@@ -394,15 +457,50 @@ scope Character {
 
     // this is the call to play_fgm_ for announcing chars
     // 8013689C
+    scope css_get_fgm_: {
+        OS.patch_start(0x00134B10, 0x80136890)
+//      sll     t5, t4, 0x0001             // original line
+//      addu    a0, sp, t5                 // original line
+        j       css_get_fgm_
+        sll     t5, t4, 0x0001
+        _css_get_fgm_return:
+        OS.patch_end()
+
+        OS.patch_start(0x00134B1C, 0x8013689C)
+//      lw      a0, 0x0020(a0)             // original line
+        nop
+        OS.patch_end()
+
+        li      a0, css_fgm_table          // a0 = table 
+        addu    a0, a0, t5                 // a0 = table + char offset
+        lhu     a0, 0x0000(a0)             // a0 = fgm id
+        j       _css_get_fgm_return        // return
+        nop       
+    }
+
+    css_fgm_table:
+    dh FGM.announcer.names.MARIO           // Mario
+    dh FGM.announcer.names.FOX             // Fox
+    dh FGM.announcer.names.DONKEY_KONG     // Donkey Kong
+    dh FGM.announcer.names.SAMUS           // Samus
+    dh FGM.announcer.names.LUIGI           // Luigi
+    dh FGM.announcer.names.LINK            // Link
+    dh FGM.announcer.names.YOSHI           // Yoshi
+    dh FGM.announcer.names.CAPTAIN_FALCON  // Captain Falcon
+    dh FGM.announcer.names.KIRBY           // Kirby
+    dh FGM.announcer.names.PIKACHU         // Pikachu
+    dh FGM.announcer.names.JIGGLYPUFF      // Jigglypuff
+    dh FGM.announcer.names.NESS            // Ness
+    // other sound fx
 
     // this loads the zoom table for each character so they all appear the same
     // size. this table has been moved and extended [Fray]
     OS.patch_start(0x00132E58, 0x80134BD8)
-    li      t2, zoom_table                  // original line 1/3
+    li      t2, css_character_zoom_table    // original line 1/3
     cvt.s.w f10, f8                         // original line 2
     OS.patch_end()
 
-    zoom_table:
+    css_character_zoom_table:
     float32 1.25                            // Mario
     float32 1.15                            // Fox
     float32 1.00                            // Donkey Kong
