@@ -35,12 +35,12 @@ scope Character {
         constant NLUIGI(0x12)
         constant NLINK(0x13)
         constant NYOSHI(0x14)
-        constant NCAPTAIN(0x16)
-        constant NKIRBY(0x17)
-        constant NPIKACHU(0x18)
-        constant NJIGGLY(0x19)
-        constant NNESS(0x1A)
-        constant GDONKEY(0x1B)
+        constant NCAPTAIN(0x15)
+        constant NKIRBY(0x16)
+        constant NPIKACHU(0x17)
+        constant NJIGGLY(0x18)
+        constant NNESS(0x19)
+        constant GDONKEY(0x1A)
         constant NONE(0x1C)
     }
     
@@ -158,7 +158,7 @@ scope Character {
 
         id_table:
         // default
-        db id.NKIRBY
+        db id.GDONKEY
         db id.MARIO
         db id.DONKEY_KONG
         db id.LINK
@@ -246,8 +246,8 @@ scope Character {
     }
 
     // TODO
-    // 1. create memory module for loading extra character files
-        // or dynamically load characters(?)
+
+    // 1. why is gdk crashing
     
     // 2. animations for additonal characters 
     
@@ -259,7 +259,23 @@ scope Character {
     // 6. get rid of white flash
 
     // @ Description
-    // allows for 
+    // 1. memory solution 
+    scope css_move_filetable_: {
+        OS.patch_start(0x000499F8, 0x800CE018)
+//      jr      ra                          // original line
+//      sw      t6, 0x002C(v0)              // original line
+        j       css_move_filetable_
+        nop
+        OS.patch_end()
+        
+        li      t3, 0x00000100              // t3 = hardcode filetable length
+        sw      t3, 0x001C(v0)              // update filetable length
+        li      t3, 0x80700000              // t3 = hardcoded filetable address
+        sw      t3, 0x0020(v0)              // update filetable address
+
+        jr      ra                          // original line
+        sw      t6, 0x002C(v0)              // original line
+    }
 
     // @ Description
     // allows for custom entries of series logo based on file offset (+0x10 for DF000000 00000000)
@@ -372,8 +388,8 @@ scope Character {
     dw series_logo.SMASH                    // Polygon Pikachu
     dw series_logo.SMASH                    // Polygon Jigglypuff
     dw series_logo.SMASH                    // Polygon Ness
-    dw 0x00000000                           // Unknown (Placeholder)
     dw series_logo.DONKEY_KONG              // Giant Donkey Kong
+    dw 0x00000000                           // (Placeholder)
     dw 0x00000000                           // None (Placeholder)
 
     // @ Description
@@ -450,13 +466,13 @@ scope Character {
     float32 1.50                            // Polygon Pikachu
     float32 1.50                            // Polygon Jigglypuff
     float32 1.50                            // Polygon Ness
-    float32 0.00                            // Unknown (Placeholder)
     float32 2.00                            // Giant Donkey Kong
+    float32 0.00                            // (Placeholder)
     float32 0.00                            // None (Placeholder)
 
     // this line controls how many chars are loaded on the VS. CSS
     OS.patch_start(0x0013944C, 0x8013B1CC)
-    slti    at, s0, id.NKIRBY + 1
+    slti    at, s0, id.GDONKEY + 1
     OS.patch_end()
 
     // this is the call to play_fgm_ for announcing chars
@@ -531,8 +547,8 @@ scope Character {
     float32 1.20                            // Polygon Pikachu
     float32 1.25                            // Polygon Jigglypuff
     float32 1.30                            // Polygon Ness
-    float32 0.00                            // Unknown (Placeholder)
-    float32 0.90                            // Giant Donkey Kong
+    float32 1.10                            // Giant Donkey Kong
+    float32 0.00                            // (Placeholder)
     float32 0.00                            // None (Placeholder)
 
 }
