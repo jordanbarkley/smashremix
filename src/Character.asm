@@ -35,12 +35,12 @@ scope Character {
         constant NLUIGI(0x12)
         constant NLINK(0x13)
         constant NYOSHI(0x14)
-        constant NCAPTAIN(0x14)
-        constant NKIRBY(0x15)
-        constant NPIKACHU(0x17)
-        constant NJIGGLY(0x18)
-        constant NNESS(0x19)
-        constant GDONKEY(0x1A)
+        constant NCAPTAIN(0x16)
+        constant NKIRBY(0x17)
+        constant NPIKACHU(0x18)
+        constant NJIGGLY(0x19)
+        constant NNESS(0x1A)
+        constant GDONKEY(0x1B)
         constant NONE(0x1C)
     }
     
@@ -158,7 +158,7 @@ scope Character {
 
         id_table:
         // default
-        db id.METAL_MARIO
+        db id.NKIRBY
         db id.MARIO
         db id.DONKEY_KONG
         db id.LINK
@@ -254,8 +254,12 @@ scope Character {
     // 3. find the dlist for the character tiles
         // E41180E0 - draw tex rect instruction for luigi and some
 
-    // improve chip movement when picked up (optional)
-    // update character zoom for extra chars (optional)
+    // 4. improve chip movement when picked up (optional)
+    // 5. update character zoom for extra chars (optional)
+    // 6. get rid of white flash
+
+    // @ Description
+    // allows for 
 
     // @ Description
     // allows for custom entries of series logo based on file offset (+0x10 for DF000000 00000000)
@@ -452,7 +456,7 @@ scope Character {
 
     // this line controls how many chars are loaded on the VS. CSS
     OS.patch_start(0x0013944C, 0x8013B1CC)
-    slti    at, s0, id.NMARIO + 1
+    slti    at, s0, id.NKIRBY + 1
     OS.patch_end()
 
     // this is the call to play_fgm_ for announcing chars
