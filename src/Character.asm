@@ -8,6 +8,7 @@ print "included Character.asm\n"
 
 include "Global.asm"
 include "OS.asm"
+include "RCP.asm"
 
 scope Character {
     // @ Description
@@ -194,7 +195,15 @@ scope Character {
 
     }
 
-    scope run_: {
+
+    display_list_info:
+    RCP.display_list_info(OS.NULL, 0)
+
+    scope draw_tiles_: {
+        OS.patch_start(0x001307A0, 0x80132520)
+        j       draw_tiles_
+        nop
+        OS.patch_end()
 
         addiu   sp, sp,-0x0028              // allocate stack space
         sw      ra, 0x0004(sp)              // ~
@@ -207,6 +216,19 @@ scope Character {
         sw      a2, 0x0020(sp)              // ~
         sw      a3, 0x0024(sp)              // restore registers
         
+        // init
+        li      t0, RCP.display_list_info_p // t0 = display list info pointer 
+        li      t1, display_list_info       // t1 = address of display list info
+        sw      t1, 0x0000(t0)              // update display list info pointer
+
+        // reset
+        li      t0, 0x800465b0              // ~
+        lw      t0, 0x0000(t0)              // t0 = address of display_list
+        li      t1, display_list_info       // t1 = address of display_list_info 
+        sw      t0, 0x0000(t1)              // ~
+        sw      t0, 0x0004(t1)              // update display list address each frame
+
+        // draw tiles here
 
         // draw each character portrait
         // for each row
@@ -248,6 +270,13 @@ scope Character {
         b       _inner_loop                 // loop
         nop
 
+        _update_ssb_display_list:
+        li      t0, 0x800465b0              // ~
+        li      t1, display_list_info
+        lw      t1, 0x0004(t1)
+        sw      t1, 0x0000(t0)
+
+
         _end:
         lw      ra, 0x0004(sp)              // ~
         lw      t0, 0x0008(sp)              // ~
@@ -259,10 +288,8 @@ scope Character {
         lw      a2, 0x0020(sp)              // ~
         lw      a3, 0x0024(sp)              // restore registers
         addiu   sp, sp, 0x0028              // deallocate stack space
-        jr      ra                          // return
+        jr      ra                          // return (discard original function)
         nop
-
-
     }
 
     // TODO
@@ -272,9 +299,16 @@ scope Character {
     // 2. animations for additonal characters 
     
     // 3. find the dlist for the character tiles
+    // 3b. find a better hook
         // E41180E0 - draw tex rect instruction for luigi and some
         // first DF000000 before that @ 8013C6E0
         // instruction of to a struct that important 800CCF10
+
+
+
+        // this funciton draws them -  80132520
+        // address of dlistp(?) - 800465b0
+            // this is actually a dlist struct here. interesting
 
     // 4. improve chip movement when picked up (optional)
     // 5. update character zoom for extra chars (optional)

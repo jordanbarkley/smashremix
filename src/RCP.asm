@@ -101,7 +101,7 @@ scope RCP {
     // @ Arguments
     // a0 - upper half of command
     // a1 - lower half of command
-    scope append_: {
+    scope append_safe_: {
         addiu   sp, sp,-0x0018              // allocate statck space
         sw      t0, 0x0004(sp)              // ~
         sw      t1, 0x0008(sp)              // ~
@@ -131,6 +131,36 @@ scope RCP {
 
         _break:
         break                               // halt execution
+    }
+
+    // Does not halt for size issues (currently used)
+    scope append_: {
+        addiu   sp, sp,-0x0018              // allocate statck space
+        sw      t0, 0x0004(sp)              // ~
+        sw      t1, 0x0008(sp)              // ~
+        sw      t2, 0x000C(sp)              // ~
+        sw      t3, 0x0010(sp)              // save registers
+
+        li      t0, display_list_info_p      // ~
+        lw      t0, 0x0000(t0)              // ~
+        lw      t1, 0x0000(t0)              // t1 = start address
+        lw      t2, 0x0004(t0)              // t2 = curr address
+        lw      t3, 0x0008(t0)              // t3 = size
+        addu    t1, t1, t3                  // t1 = start address + size
+//      beq     t1, t2, _break              // if (curr address == max address), break execution
+        nop
+        sw      a0, 0x0000(t2)              // store upper half 
+        sw      a1, 0x0004(t2)              // store lower half
+        addiu   t2, t2, 0x0008              // t2 = curr address++
+        sw      t2, 0x0004(t0)              // store new current address
+
+        lw      t0, 0x0004(sp)              // ~
+        lw      t1, 0x0008(sp)              // ~
+        lw      t2, 0x000C(sp)              // ~
+        lw      t3, 0x0010(sp)              // restore registers
+        addiu   sp, sp, 0x0018              // deallocate statck space
+        jr      ra
+        nop
     }
 
     // @ Description
