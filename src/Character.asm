@@ -97,10 +97,10 @@ scope Character {
     constant START_X(10)
     constant START_Y(20)
     constant START_VISUAL(15)
-    constant NUM_ROWS(2)
-    constant NUM_COLUMNS(6)
+    constant NUM_ROWS(3)
+    constant NUM_COLUMNS(8)
     constant NUM_TILES(NUM_ROWS * NUM_COLUMNS)
-    constant ICON_SIZE(50)
+    constant ICON_SIZE(30)
 
     scope css_get_character_id_: {
         OS.patch_start(0x000135AEC, 0x8013786C)
@@ -158,18 +158,38 @@ scope Character {
 
         id_table:
         // default
-        db id.GDONKEY
+        // row 1
+        db id.LUIGI
         db id.MARIO
         db id.DONKEY_KONG
         db id.LINK
         db id.SAMUS
         db id.CAPTAIN_FALCON
+
+        db id.METAL_MARIO
+        db id.NMARIO
+        
+        // row 2
         db id.NESS
         db id.YOSHI
         db id.KIRBY
         db id.FOX
         db id.PIKACHU
         db id.JIGGLYPUFF
+
+        db id.NDONKEY
+        db id.NLINK
+
+        // row 3
+        db id.NSAMUS
+        db id.NCAPTAIN
+        db id.NNESS
+        db id.NYOSHI
+        db id.NKIRBY
+        db id.NFOX
+        db id.NPIKACHU
+        db id.NJIGGLY
+
         OS.align(4)
 
     }
@@ -253,6 +273,8 @@ scope Character {
     
     // 3. find the dlist for the character tiles
         // E41180E0 - draw tex rect instruction for luigi and some
+        // first DF000000 before that @ 8013C6E0
+        // instruction of to a struct that important 800CCF10
 
     // 4. improve chip movement when picked up (optional)
     // 5. update character zoom for extra chars (optional)
@@ -309,6 +331,7 @@ scope Character {
         constant PIKACHU(0x000032F8)
         constant JIGGLYPUFF(0x00003DB8)
         constant NESS(0x000035B0)
+        constant YUH(0x0)
     }
 
     css_name_texture_table:
@@ -324,6 +347,41 @@ scope Character {
     dw name_texture.PIKACHU                 // Pikachu
     dw name_texture.JIGGLYPUFF              // Jigglypuff
     dw name_texture.NESS                    // Ness
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+    dw name_texture.YUH
+
+
 
 
     // @ Description
@@ -511,7 +569,48 @@ scope Character {
     dh FGM.announcer.names.PIKACHU         // Pikachu
     dh FGM.announcer.names.JIGGLYPUFF      // Jigglypuff
     dh FGM.announcer.names.NESS            // Ness
+    
     // other sound fx
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
+    dh 0
 
     // this loads the zoom table for each character so they all appear the same
     // size. this table has been moved and extended [Fray]
@@ -547,7 +646,7 @@ scope Character {
     float32 1.20                            // Polygon Pikachu
     float32 1.25                            // Polygon Jigglypuff
     float32 1.30                            // Polygon Ness
-    float32 1.10                            // Giant Donkey Kong
+    float32 1.25                            // Giant Donkey Kong
     float32 0.00                            // (Placeholder)
     float32 0.00                            // None (Placeholder)
 
