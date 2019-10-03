@@ -9,8 +9,69 @@ print "included Character.asm\n"
 include "Global.asm"
 include "OS.asm"
 include "RCP.asm"
+include "Texture.asm"
 
 scope Character {
+
+    // hands
+    insert hand_pointing,       "../textures/hand_pointing.rgba5551"
+    insert hand_holding,        "../textures/hand_holding.rgba5551"
+    insert hand_open,           "../textures/hand_open.rgba5551"
+
+    constant HAND_WIDTH(32)
+    constant HAND_HEIGHT(32)
+
+    // icons
+    insert icon_donkey_kong,    "../textures/icon_donkey_kong.rgba5551"
+    insert icon_falcon,         "../textures/icon_falcon.rgba5551"
+    insert icon_fox,            "../textures/icon_fox.rgba5551"
+    insert icon_jigglypuff,     "../textures/icon_jigglypuff.rgba5551"
+    insert icon_kirby,          "../textures/icon_kirby.rgba5551"
+    insert icon_link,           "../textures/icon_link.rgba5551"
+    insert icon_luigi,          "../textures/icon_luigi.rgba5551"
+    insert icon_mario,          "../textures/icon_mario.rgba5551"
+    insert icon_ness,           "../textures/icon_ness.rgba5551"
+    insert icon_pikachu,        "../textures/icon_pikachu.rgba5551"
+    insert icon_samus,          "../textures/icon_samus.rgba5551"
+    insert icon_yoshi,          "../textures/icon_yoshi.rgba5551"
+
+    icon_table:
+    dw icon_mario                   // Mario
+    dw icon_fox                     // Fox
+    dw icon_donkey_kong             // Donkey Kong
+    dw icon_samus                   // Samus
+    dw icon_luigi                   // Luigi
+    dw icon_link                    // Link
+    dw icon_yoshi                   // Yoshi
+    dw icon_falcon                  // Captain Falcon
+    dw icon_kirby                   // Kirby
+    dw icon_pikachu                 // Pikachu
+    dw icon_jigglypuff              // Jigglypuff
+    dw icon_ness                    // Ness
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+    dw icon_mario                   // Mario
+
     // @ Description
     // character id constants
     // constant names are loosely based on the debug names for characters
@@ -95,13 +156,13 @@ scope Character {
     // v0 - character id
     // 8013782C
 
-    constant START_X(25)
-    constant START_Y(20)
-    constant START_VISUAL(15)
+    constant START_X(20)
+    constant START_Y(22)
+    constant START_VISUAL(10)
     constant NUM_ROWS(3)
     constant NUM_COLUMNS(8)
     constant NUM_TILES(NUM_ROWS * NUM_COLUMNS)
-    constant ICON_SIZE(30)
+    constant ICON_SIZE(32)
 
     scope css_get_character_id_: {
         OS.patch_start(0x000135AEC, 0x8013786C)
@@ -156,44 +217,44 @@ scope Character {
         addiu   sp, sp, 0x0010      // deallocate stack space
         jr      ra                  // return (discard the rest of the function)
         addiu   sp, sp, 0x0028      // deallocate stack space (original function)
-
-        id_table:
-        // default
-        // row 1
-        db id.LUIGI
-        db id.MARIO
-        db id.DONKEY_KONG
-        db id.LINK
-        db id.SAMUS
-        db id.CAPTAIN_FALCON
-
-        db id.METAL_MARIO
-        db id.NMARIO
-        
-        // row 2
-        db id.NESS
-        db id.YOSHI
-        db id.KIRBY
-        db id.FOX
-        db id.PIKACHU
-        db id.JIGGLYPUFF
-
-        db id.NDONKEY
-        db id.NLINK
-
-        // row 3
-        db id.NSAMUS
-        db id.NCAPTAIN
-        db id.NNESS
-        db id.NYOSHI
-        db id.NKIRBY
-        db id.NFOX
-        db id.NPIKACHU
-        db id.NJIGGLY
-
-        OS.align(4)
-
     }
+
+    id_table:
+    // default
+    // row 1
+    db id.LUIGI
+    db id.MARIO
+    db id.DONKEY_KONG
+    db id.LINK
+    db id.SAMUS
+    db id.CAPTAIN_FALCON
+
+    db id.MARIO
+    db id.MARIO
+
+    // row 2
+    db id.NESS
+    db id.YOSHI
+    db id.KIRBY
+    db id.FOX
+    db id.PIKACHU
+    db id.JIGGLYPUFF
+
+    db id.MARIO
+    db id.MARIO
+
+
+    // row 3
+    db id.MARIO
+    db id.MARIO
+    db id.MARIO
+    db id.MARIO
+    db id.MARIO
+    db id.MARIO
+
+
+    OS.align(4)
+
 
     display_list_info:
     RCP.display_list_info(OS.NULL, 0)
@@ -225,8 +286,6 @@ scope Character {
         // for each row
         // for each column
 
-
-
         lli     t0, NUM_ROWS                // init rows
         _outer_loop:
         beqz    t0, _cursor                 // once every row complete, draw cursor
@@ -240,25 +299,39 @@ scope Character {
         nop
         addiu   t1, t1,-0x0001              // decrement inner loop
 
-        lli     a2, ICON_SIZE               // a2 - width 
-        lli     a3, ICON_SIZE               // a3 - height
-        multu   a2, t1                  
-        lli     a0, Color.ORANGE
-        jal     Overlay.set_color_          // fill color = orange
-        nop                                 // ~
+
+        // calculate ulx/uly offset
+        lli     a2, ICON_SIZE
+        multu   a2, t1                      // ~
         mflo    t3                          // t3 = ulx offset
         multu   a2, t0                      // ~
         mflo    t4                          // t4 = uly offset
 
 
-
+        // add to ulx/uly
         lli     a0, START_X + START_VISUAL  // ~
         addu    a0, a0, t3                  // a0 - ulx
         lli     a1, START_Y + START_VISUAL  // ~
         addu    a1, a1, t4                  // a1 - uly
-        lli     a2, ICON_SIZE - 1           // a2 - width
-        lli     a3, ICON_SIZE - 1           // a3 - height
-        jal     Overlay.draw_rectangle_     // draw rectangle
+
+        // get the character tile to draw
+
+
+        // draw character tile
+        lli     t2, NUM_COLUMNS             // ~
+        multu   t0, t2                      // ~
+        mflo    t2                          // ~
+        addu    t2, t2, t1                  // ~
+        li      t3, id_table                // ~
+        addu    t3, t3, t2                  // t3 = (id_table + ((y * NUM_COLUMNS) + x))
+        lbu     t3, 0x0000(t3)              // t3 = id of character to draw
+        sll     t3, t3, 0x0002              // t3 = id * 4
+        li      t4, icon_table              // t4 = icon table
+        addu    t4, t4, t3                  // t4 = icon_table[id]
+        lw      t4, 0x0000(t4)              // t4 = address of texture
+        li      a2, icon_info               // a2 - address of texture struct
+        sw      t4, 0x008(a2)               // update texture to draw
+        jal     Overlay.draw_texture_       // draw icon
         nop
 
         b       _inner_loop                 // loop
@@ -295,7 +368,7 @@ scope Character {
 
         or      a0, v1, r0                  // a0 - ulx 
         or      a1, v0, r0                  // a1 - uly
-        lw      t2, 0x0054(t1)              // t0 = cursor state
+        lw      t2, 0x0054(t1)              // t2 = cursor state
         lli     t3, 0x0001                  // t1 = HOLDING_TOKEN
         bne     t2, t3, _draw_cursor        // if not holding, skip
         nop
@@ -304,12 +377,15 @@ scope Character {
 
 
         _draw_cursor:
-//      or      a0, v1, r0                  // a0 - ulx 
-//      or      a1, v0, r0                  // a1 - uly
-        lli     a2, 10                      // a2 - width
-        lli     a3, 10                      // a3 - height
-        jal     Overlay.draw_rectangle_     // draw rectangle
+        sll     t2, t2, 0x0002              // t1 = cursor_state * 4
+        li      t3, hand_textures           // ~
+        addu    t3, t3, t2                  // ~
+        lw      t3, 0x0000(t3)              // t3 = address of hand texture
+        li      a2, hand_info               // a2 - address of texture struct
+        sw      t3, 0x00008(a2)             // update info image data
+        jal     Overlay.draw_texture_       // draw icon
         nop
+
 
         _token:
         lw      t2, 0x0004(t1)              // t2 = p2 token
@@ -353,6 +429,17 @@ scope Character {
         dw 0x8013BB44
         dw 0x8013BC00
         dw 0x8013BCBC
+
+        hand_textures:
+        dw hand_pointing
+        dw hand_holding
+        dw hand_open
+
+        hand_info:
+        Texture.info(HAND_WIDTH, HAND_HEIGHT)
+
+        icon_info:
+        Texture.info(ICON_SIZE, ICON_SIZE)
     }
 
     // TODO
