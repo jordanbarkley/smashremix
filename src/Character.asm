@@ -95,7 +95,7 @@ scope Character {
     // v0 - character id
     // 8013782C
 
-    constant START_X(10)
+    constant START_X(25)
     constant START_Y(20)
     constant START_VISUAL(15)
     constant NUM_ROWS(3)
@@ -195,17 +195,20 @@ scope Character {
 
     }
 
-
     display_list_info:
     RCP.display_list_info(OS.NULL, 0)
 
-    scope draw_tiles_: {
+    // later revision
+    scope run_: {
+
+        // disable drawing of tiles
         OS.patch_start(0x001307A0, 0x80132520)
-        j       draw_tiles_
+        jr      ra 
         nop
         OS.patch_end()
 
-        addiu   sp, sp,-0x0028              // allocate stack space
+
+        addiu   sp, sp,-0x0030              // allocate stack space
         sw      ra, 0x0004(sp)              // ~
         sw      t0, 0x0008(sp)              // ~
         sw      t1, 0x000C(sp)              // ~
@@ -214,29 +217,19 @@ scope Character {
         sw      a0, 0x0018(sp)              // ~
         sw      a1, 0x001C(sp)              // ~
         sw      a2, 0x0020(sp)              // ~
-        sw      a3, 0x0024(sp)              // restore registers
-        
-        // init
-        li      t0, RCP.display_list_info_p // t0 = display list info pointer 
-        li      t1, display_list_info       // t1 = address of display list info
-        sw      t1, 0x0000(t0)              // update display list info pointer
-
-        // reset
-        li      t0, 0x800465b0              // ~
-        lw      t0, 0x0000(t0)              // t0 = address of display_list
-        li      t1, display_list_info       // t1 = address of display_list_info 
-        sw      t0, 0x0000(t1)              // ~
-        sw      t0, 0x0004(t1)              // update display list address each frame
-
-        // draw tiles here
+        sw      a3, 0x0024(sp)              // ~
+        sw      t4, 0x0028(sp)              // ~
+        sw      v1, 0x002C(sp)              // save registers
 
         // draw each character portrait
         // for each row
         // for each column
 
+
+
         lli     t0, NUM_ROWS                // init rows
         _outer_loop:
-        beqz    t0, _end                    // once every row complete, end
+        beqz    t0, _cursor                 // once every row complete, draw cursor
         nop
         addiu   t0, t0,-0x0001              // decrement outer loop
 
@@ -249,15 +242,16 @@ scope Character {
 
         lli     a2, ICON_SIZE               // a2 - width 
         lli     a3, ICON_SIZE               // a3 - height
-        multu   a2, t1                      // ~
+        multu   a2, t1                  
+        lli     a0, Color.ORANGE
+        jal     Overlay.set_color_          // fill color = orange
+        nop                                 // ~
         mflo    t3                          // t3 = ulx offset
         multu   a2, t0                      // ~
         mflo    t4                          // t4 = uly offset
 
 
-        lli     a0, Color.ORANGE
-        jal     Overlay.set_color_          // fill color = RED
-        nop
+
         lli     a0, START_X + START_VISUAL  // ~
         addu    a0, a0, t3                  // a0 - ulx
         lli     a1, START_Y + START_VISUAL  // ~
@@ -270,11 +264,72 @@ scope Character {
         b       _inner_loop                 // loop
         nop
 
-        _update_ssb_display_list:
-        li      t0, 0x800465b0              // ~
-        li      t1, display_list_info
-        lw      t1, 0x0004(t1)
-        sw      t1, 0x0000(t0)
+
+        // draw difference
+        // 438AFFFF,  43867FFF
+        // holding, pointing/open
+        // ~278 ~269
+
+        // 0x0000(player data) = cursor
+        // 0x0000
+        _cursor:
+        lli     at, 0x0003                  // i = 3
+
+        _loop:
+        lli     a0, Color.BLUE
+        jal     Overlay.set_color_          // fill color = blue
+        nop
+
+        li      t0, player_data             // t0 = player_data_table
+        sll     t1, at, 0x0002              // t1 = i * 4
+        addu    t0, t0, t1                  // t0 = player_data_table[i]
+        lw      t1, 0x0000(t0)              // t1 = data
+        lw      t2, 0x0000(t1)              // t2 = cursor
+        lw      a0, 0x00E0(t2)              // a0 = (float) p2 cursor x
+        jal     OS.float_to_int_            // v0 = (int) p2 cursor x
+        nop
+        or      v1, v0, r0                  // v1 = (int) p2 cursor x
+        lw      a0, 0x00E4(t2)              // a0 = (float) p2 cursor y
+        jal     OS.float_to_int_            // v0 = (int) p2 cursor y
+        nop
+
+        or      a0, v1, r0                  // a0 - ulx 
+        or      a1, v0, r0                  // a1 - uly
+        lw      t2, 0x0054(t1)              // t0 = cursor state
+        lli     t3, 0x0001                  // t1 = HOLDING_TOKEN
+        bne     t2, t3, _draw_cursor        // if not holding, skip
+        nop
+        addiu   a0, a0,-000011
+        addiu   a1, a1,-000011
+
+
+        _draw_cursor:
+//      or      a0, v1, r0                  // a0 - ulx 
+//      or      a1, v0, r0                  // a1 - uly
+        lli     a2, 10                      // a2 - width
+        lli     a3, 10                      // a3 - height
+        jal     Overlay.draw_rectangle_     // draw rectangle
+        nop
+
+        _token:
+        lw      t2, 0x0004(t1)              // t2 = p2 token
+        lw      a0, 0x00E0(t2)              // a0 = (float) p2 token x
+        jal     OS.float_to_int_            // v0 = (int) p2 token x
+        nop
+        or      v1, v0, r0                  // v1 = (int) p2 token x
+        lw      a0, 0x00E4(t2)              // a0 = (float) p2 token y
+        jal     OS.float_to_int_            // v0 = (int) p2 token y
+        nop
+
+        or      a0, v1, r0                  // a0 - ulx 
+        or      a1, v0, r0                  // a1 - uly
+        lli     a2, 10                      // a2 - width
+        lli     a3, 10                      // a3 - height
+        jal     Overlay.draw_rectangle_     // draw rectangle
+        nop
+
+        bnez    at, _loop                   // draw for all cursors
+        addiu   at, at,-0x0001              // decrement i
 
 
         _end:
@@ -286,32 +341,24 @@ scope Character {
         lw      a0, 0x0018(sp)              // ~
         lw      a1, 0x001C(sp)              // ~
         lw      a2, 0x0020(sp)              // ~
-        lw      a3, 0x0024(sp)              // restore registers
-        addiu   sp, sp, 0x0028              // deallocate stack space
-        jr      ra                          // return (discard original function)
+        lw      a3, 0x0024(sp)              // ~
+        lw      t4, 0x0028(sp)              // ~
+        lw      v1, 0x002C(sp)              // restore registers
+        addiu   sp, sp, 0x0030              // deallocate stack space
+        jr      ra                          // return
         nop
+
+        player_data:
+        dw 0x8013BA88
+        dw 0x8013BB44
+        dw 0x8013BC00
+        dw 0x8013BCBC
     }
 
     // TODO
 
     // 1. why is gdk crashing
-    
     // 2. animations for additonal characters 
-    
-    // 3. find the dlist for the character tiles
-    // 3b. find a better hook
-        // E41180E0 - draw tex rect instruction for luigi and some
-        // first DF000000 before that @ 8013C6E0
-        // instruction of to a struct that important 800CCF10
-
-
-
-        // this funciton draws them -  80132520
-        // address of dlistp(?) - 800465b0
-            // this is actually a dlist struct here. interesting
-
-    // 4. improve chip movement when picked up (optional)
-    // 5. update character zoom for extra chars (optional)
     // 6. get rid of white flash
 
     // @ Description
