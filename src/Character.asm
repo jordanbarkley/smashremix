@@ -21,6 +21,16 @@ scope Character {
     constant HAND_WIDTH(32)
     constant HAND_HEIGHT(32)
 
+    // chips
+    insert chip_1,              "../textures/chip_1.rgba5551"
+    insert chip_2,              "../textures/chip_2.rgba5551"
+    insert chip_3,              "../textures/chip_3.rgba5551"
+    insert chip_4,              "../textures/chip_4.rgba5551"
+    insert chip_C,              "../textures/chip_C.rgba5551"
+
+    constant CHIP_WIDTH(32)
+    constant CHIP_HEIGHT(32)
+
     // icons
     insert icon_donkey_kong,    "../textures/icon_donkey_kong.rgba5551"
     insert icon_falcon,         "../textures/icon_falcon.rgba5551"
@@ -156,7 +166,7 @@ scope Character {
     // v0 - character id
     // 8013782C
 
-    constant START_X(20)
+    constant START_X(22)
     constant START_Y(22)
     constant START_VISUAL(10)
     constant NUM_ROWS(3)
@@ -301,7 +311,7 @@ scope Character {
 
 
         // calculate ulx/uly offset
-        lli     a2, ICON_SIZE
+        lli     a2, ICON_SIZE - 1
         multu   a2, t1                      // ~
         mflo    t3                          // t3 = ulx offset
         multu   a2, t0                      // ~
@@ -358,11 +368,11 @@ scope Character {
         addu    t0, t0, t1                  // t0 = player_data_table[i]
         lw      t1, 0x0000(t0)              // t1 = data
         lw      t2, 0x0000(t1)              // t2 = cursor
-        lw      a0, 0x00E0(t2)              // a0 = (float) p2 cursor x
+        lw      a0, 0x0170(t2)              // a0 = (float) p2 cursor x
         jal     OS.float_to_int_            // v0 = (int) p2 cursor x
         nop
         or      v1, v0, r0                  // v1 = (int) p2 cursor x
-        lw      a0, 0x00E4(t2)              // a0 = (float) p2 cursor y
+        lw      a0, 0x0174(t2)              // a0 = (float) p2 cursor y
         jal     OS.float_to_int_            // v0 = (int) p2 cursor y
         nop
 
@@ -399,9 +409,13 @@ scope Character {
 
         or      a0, v1, r0                  // a0 - ulx 
         or      a1, v0, r0                  // a1 - uly
-        lli     a2, 10                      // a2 - width
-        lli     a3, 10                      // a3 - height
-        jal     Overlay.draw_rectangle_     // draw rectangle
+        sll     t2, at, 0x0002              // t2 = index * 4
+        li      t3, chip_textures           // ~
+        addu    t3, t3, t2                  // ~
+        lw      t3, 0x0000(t3)              // t3 = address of hand texture
+        li      a2, chip_info               // a2 - address of texture struct
+        sw      t3, 0x00008(a2)             // update info image data
+        jal     Overlay.draw_texture_       // draw icon
         nop
 
         bnez    at, _loop                   // draw for all cursors
@@ -435,11 +449,20 @@ scope Character {
         dw hand_holding
         dw hand_open
 
+        chip_textures:
+        dw chip_1
+        dw chip_2
+        dw chip_3
+        dw chip_4
+
         hand_info:
         Texture.info(HAND_WIDTH, HAND_HEIGHT)
 
         icon_info:
         Texture.info(ICON_SIZE, ICON_SIZE)
+
+        chip_info:
+        Texture.info(CHIP_WIDTH, CHIP_HEIGHT)
     }
 
     // TODO

@@ -88,7 +88,7 @@ scope Overlay {
         lli     t1, 0x0010                  // t1 = character select screen
         bne     t0, t1, _finish             // if (screen_id != stage_select), skip
         nop
-        jal     Character.run_              //
+        jal     CharacterSelect.run_        //
         nop
 
         _finish:
